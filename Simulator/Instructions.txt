@@ -1,0 +1,69 @@
+ARCHITECTURE
+	ADD = 1
+	MULTI = 1
+	DIVI = 1
+	LOAD_BUFFER = 1
+	WRITE_BUFFER = 1
+	MEMORY_SIZE = 2048
+
+CYCLES
+	LD = 1	
+	ST = 1
+	MOVE = 1
+	NEG = 1
+	NOT = 1
+	AND = 1
+	OR = 1
+	ADD = 1
+	SUB = 1
+	MULTI = 1
+	DIV = 1
+	SSL = 1
+	SLR = 1
+	LI = 1
+	BEQZ = 1
+	BNEZ = 1
+	BGTZ = 1
+	BLEZ = 1
+	ADDI = 1
+	SUBI = 1
+	MULTI = 1
+	DIVI = 1
+	ANDI = 1
+	ORI = 1
+	BEQ = 1
+	BNE = 1
+	BGT = 1
+	BGE = 1
+	BLT = 1
+	BLE = 1
+	B = 1
+PIPELINE
+  INSTR_FETCH_LIMIT = 2
+  INSTR_QUEUE_SIZE = 15
+  N_RESERV_STATION = 3
+
+TEXT
+.data
+  5
+  4
+  3
+  2
+  1
+.text
+  LI R1 0
+  ST R1 R1
+  LD R1 R1
+  LI R2 1
+  ST R2 R2
+  LD R2 R2
+  LI R3 2
+  ST R3 R3
+  LD R3 R3
+  LI R4 3
+  ST R4 R4
+  LD R4 R4
+  LI R5 4
+  ST R5 R5
+  LD R5 R5
+
