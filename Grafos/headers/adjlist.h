@@ -27,4 +27,8 @@ void enqueue(queue *q, int insertKey);
 
 int dequeue(queue *q);
 
+int removeList(queue *q, int keyRemove);
+
+int searchMin(queue *q);
+
 #endif

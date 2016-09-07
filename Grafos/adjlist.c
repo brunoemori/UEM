@@ -57,7 +57,7 @@ void enqueue(queue *q, int insertElement) {
 
 int dequeue(queue *q) {
   int removedElement;
-  if (q->lastElement != NULL) {
+  if (q->firstElement != NULL) {
     queueBlock *auxPointer = q->firstElement;
     removedElement = auxPointer->keyValue;
     q->firstElement = q->firstElement->nextBlock;
@@ -67,3 +67,31 @@ int dequeue(queue *q) {
   return removedElement;
 }
 
+int searchMin(queue *q) {
+  if (q->firstElement != NULL) {
+    queueBlock *auxPointer = q->firstElement->nextBlock;
+    int minKey = q->firstElement->keyValue;
+    while (auxPointer != NULL) {
+      if (auxPointer->keyValue < minKey)
+          minKey = auxPointer->keyValue;
+      auxPointer = auxPointer->nextBlock;
+    }
+    return minKey;
+  }
+}
+int removeList(queue *q, int keyRemove) {
+  if (q->lastElement != NULL) {
+    if (q->firstElement->keyValue == keyRemove) {
+      q->firstElement = q->firstElement->nextBlock;
+      return 0;
+    }
+    queueBlock *auxPointer = q->firstElement;
+    while ((auxPointer->nextBlock->keyValue != keyRemove)) {
+      auxPointer = auxPointer->nextBlock;
+      if (auxPointer == NULL)
+        return 0;
+    }
+    auxPointer = auxPointer->nextBlock->nextBlock;
+  }
+  return 1;
+}
