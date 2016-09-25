@@ -29,12 +29,10 @@ double taylorSeries(double x, double nTerms) {
   return i;
 }
 
-using namespace std;
-
 int main() {
-  double x = taylorSeries(0.1, 6);
+  double x = taylorSeries(0.9, 6);
   cout << "Using Taylor Series, with finite terms." << endl;
   printf("X (7 terms) = %.12lf\n", x);
-  x = taylorSeries(0.1, 7);
+  x = taylorSeries(0.9, 7);
   printf("X (8 terms) = %.12lf\n", x);
 }
