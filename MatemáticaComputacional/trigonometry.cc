@@ -62,7 +62,7 @@ double cos1quad(double rad, int nTerms) {
 }
 
 double sin2quad(double rad, int nTerms) {
-  //90 < degree <= 180	
+	//90 < degree <= 180	
 	double result = sin1quad(PI - rad, nTerms);
 	return result;
 }
@@ -98,24 +98,24 @@ double cos4quad(double rad, int nTerms) {
 }
 
 int main() {
-  double input, x, deg;
+	double input, x, deg;	
 	cout << "Input in degrees: ";
-  cin >> input;
+	cin >> input;
 	if (input < 0) 
 		input = input * (-1);
-  while (input > 360)
-    input = input - 360;
-  deg = input;
-  input = (input * PI) / 180;
-  if (deg >= 0 && deg <= 90) {
-    x = sin1quad(input, CTERMS);
-    printf("sin(%.2lf) = %.12lf\n", input, x);
-    x = cos1quad(input, CTERMS);
-    printf("cos(%.2lf) = %.12lf\n", input, x);
-  }
+	while (input > 360)
+		input = input - 360;
+	deg = input;
+	input = (input * PI) / 180;
+	if (deg >= 0 && deg <= 90) {
+		x = sin1quad(input, CTERMS);
+		printf("sin(%.2lf) = %.12lf\n", input, x);
+		x = cos1quad(input, CTERMS);
+		printf("cos(%.2lf) = %.12lf\n", input, x);
+	}
 	else if (deg > 90 && deg <= 180) {
 		x = sin2quad(input, CTERMS);
-    printf("sin(%.2lf) = %.12lf\n", input, x);
+		printf("sin(%.2lf) = %.12lf\n", input, x);
 		x = cos2quad(input, CTERMS);
 		printf("cos(%.2lf) = %.12lf\n", input, x);
 	}
@@ -131,5 +131,5 @@ int main() {
 		x = cos4quad(input, CTERMS);
 		printf("cos(%.2lf) = %.12lf\n", input, x);
 	}
-  return 0;
+	return 0;
 }
