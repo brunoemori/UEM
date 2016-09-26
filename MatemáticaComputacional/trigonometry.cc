@@ -42,6 +42,7 @@ double cosSeries(double rad, int nTerms) {
 } 
 
 double sin1quad(double rad, int nTerms) {
+	//0 <= degree <= 90
   double result;
   if (rad <= PI / 4) 
     result = sinSeries(rad, nTerms);
@@ -51,6 +52,7 @@ double sin1quad(double rad, int nTerms) {
 }
 
 double cos1quad(double rad, int nTerms) {
+	//0 <= degree <= 90
   double result;
   if (rad <= PI / 4)
     result = cosSeries(rad, nTerms);
@@ -60,14 +62,38 @@ double cos1quad(double rad, int nTerms) {
 }
 
 double sin2quad(double rad, int nTerms) {
-  //90 < rad <= 180	
+  //90 < degree <= 180	
 	double result = sin1quad(PI - rad, nTerms);
 	return result;
 }
 
 double cos2quad(double rad, int nTerms) {
-	//90 < rad <= 180
-	double result = cos1quad(PI - rad, nTerms);
+	//90 < degree <= 180
+	double result = (-1) * cos1quad(PI - rad, nTerms);
+	return result;
+}
+
+double sin3quad(double rad, int nTerms) {
+	//180 < degree <= 270
+	double result = (-1) * sin1quad(((3 * PI) / 2) - rad, nTerms);
+	return result;
+}
+
+double cos3quad(double rad, int nTerms) {
+	//180 < degree <= 270
+	double result = (-1) * cos1quad(((3 * PI) / 2) - rad, nTerms);
+	return result;
+}
+
+double sin4quad(double rad, int nTerms) {
+	//270 < degree <= 360
+	double result = (-1) * sin1quad((2 * PI) - rad, nTerms);
+	return result;
+}	
+
+double cos4quad(double rad, int nTerms) {
+	//270 < degree <= 360
+	double result = cos1quad((2 * PI) - rad, nTerms);
 	return result;
 }
 
@@ -75,6 +101,8 @@ int main() {
   double input, x, deg;
 	cout << "Input in degrees: ";
   cin >> input;
+	if (input < 0) 
+		input = input * (-1);
   while (input > 360)
     input = input - 360;
   deg = input;
@@ -91,5 +119,17 @@ int main() {
 		x = cos2quad(input, CTERMS);
 		printf("cos(%.2lf) = %.12lf\n", input, x);
 	}
+	else if (deg > 180 && deg <= 270) {
+		x = cos3quad(input, CTERMS);
+		printf("sin(%.2lf) = %.12lf\n", input, x);
+		x = sin3quad(input, CTERMS);
+		printf("cos(%.2lf) = %.12lf\n", input, x);
+	}
+	else {
+		x = sin4quad(input, CTERMS);
+		printf("sin(%.2lf) = %.12lf\n", input, x);
+		x = cos4quad(input, CTERMS);
+		printf("cos(%.2lf) = %.12lf\n", input, x);
+	}
   return 0;
- 
+}
