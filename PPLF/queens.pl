@@ -48,21 +48,43 @@ noAttack(Q, [OtherQ | QList], Dist):-
 %  F > 10; G > 10; H > 10; I > 10; J > 10),
 %  writeln('Values cannot be less than 0 or higher than 10.'),
 %  !.
+printRest(11):-
+  !.
 
-printBoard([], _):-
-  nl.
+printRest(X):-
+	write('x '),
+	X1 is X + 1,
+	printRest(X1).
 
-printBoard([S | S1], X):-
-    S == X,
-    write(S),
-    write(' '),
-    X1 is X + 1,
-    printBoard(S1, X1).
+printBoard([], _, _).
 
-printBoard([S | S1], X):-
+printBoard(_, _, 11).
+
+printBoard(S, 11, Y):-
+	nl,
+	X = 1,
+	Y1 is Y + 1,
+	printBoard(S, X, Y1),
+	!.
+
+printBoard(L, X, Y):-
+	[S | S1] = L,
+	S == X,
+	write('Q '),
+  printRest(X),
+  nl,
+	X1 is 1,
+	Y1 is Y + 1,
+	printBoard(S1, X1, Y1),
+	!.
+
+printBoard(L, X, Y):-
+	[S | _] = L,
   S =\= X,
   write('x '),
-  printBoard(S1, X).
+	X1 is X + 1,
+  printBoard(L, X1, Y),
+	!.
 
 %board(A, B, C, D, E, F, G, H, I, J):-
 %  QList = [A, B, C, D, E, F, G, H, I, J],
