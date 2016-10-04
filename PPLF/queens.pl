@@ -8,7 +8,8 @@ queens(L, S):-
   listSize(L, X),
   X > 3,
   solve(L, S),
-  safeQueen(S).
+  safeQueen(S),
+  nl, nl.
 
 queens(L, _):-
   listSize(L, X),
@@ -48,7 +49,7 @@ noAttack(Q, [OtherQ | QList], Dist):-
 %  F > 10; G > 10; H > 10; I > 10; J > 10),
 %  writeln('Values cannot be less than 0 or higher than 10.'),
 %  !.
-printRest(11):-
+printRest(10):-
   !.
 
 printRest(X):-
@@ -58,14 +59,13 @@ printRest(X):-
 
 printBoard([], _, _).
 
-printBoard(_, _, 11).
-
 printBoard(S, 11, Y):-
 	nl,
 	X = 1,
 	Y1 is Y + 1,
 	printBoard(S, X, Y1),
-	!.
+  nl,
+  !.
 
 printBoard(L, X, Y):-
 	[S | S1] = L,
