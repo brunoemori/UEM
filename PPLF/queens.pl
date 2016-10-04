@@ -46,38 +46,38 @@ printRest(10):-
   !.
 
 printRest(X):-
-	write('x '),
-	X1 is X + 1,
-	printRest(X1).
+  write('x '),
+  X1 is X + 1,
+  printRest(X1).
 
 printBoard([], _, _).
 
 printBoard(S, 11, Y):-
-	nl,
-	X = 1,
-	Y1 is Y + 1,
-	printBoard(S, X, Y1),
+  nl,
+  X = 1,
+  Y1 is Y + 1,
+  printBoard(S, X, Y1),
   nl,
   !.
 
 printBoard(L, X, Y):-
-	[S | S1] = L,
-	S == X,
-	write('Q '),
+  S | S1] = L,
+  S == X,
+  write('Q '),
   printRest(X),
   nl,
-	X1 is 1,
-	Y1 is Y + 1,
-	printBoard(S1, X1, Y1),
-	!.
+  X1 is 1,
+  1 is Y + 1,
+  printBoard(S1, X1, Y1),
+  !.
 
 printBoard(L, X, Y):-
-	[S | _] = L,
+  [S | _] = L,
   S =\= X,
   write('x '),
-	X1 is X + 1,
+  X1 is X + 1,
   printBoard(L, X1, Y),
-	!.
+  !.
 
 queens10(A, B, C, D, E, F, G, H, I, J):-
 ( A < 0 ; A > 10 ; B < 0 ; B > 10;
