@@ -42,13 +42,6 @@ noAttack(Q, [OtherQ | QList], Dist):-
   NextDist is Dist + 1,
   noAttack(Q, QList, NextDist).
 
-%board(A, B, C, D, E, F, G, H, I, J):-
-%  (A < 0; B < 0; C < 0; D < 0; E < 0;
-%  F < 0; G < 0; H < 0; I < 0; J < 0;
-%  A > 10; B > 10; C > 10; D > 10; E > 10;
-%  F > 10; G > 10; H > 10; I > 10; J > 10),
-%  writeln('Values cannot be less than 0 or higher than 10.'),
-%  !.
 printRest(10):-
   !.
 
@@ -86,6 +79,17 @@ printBoard(L, X, Y):-
   printBoard(L, X1, Y),
 	!.
 
-%board(A, B, C, D, E, F, G, H, I, J):-
-%  QList = [A, B, C, D, E, F, G, H, I, J],
-%  queens(QList, S)
+queens10(A, B, C, D, E, F, G, H, I, J):-
+( A < 0 ; A > 10 ; B < 0 ; B > 10;
+  C < 0 ; C > 10 ; C < 0 ; C > 10;
+  D < 0 ; D > 10 ; E < 0 ; E > 10;
+  F < 0 ; F > 10 ; G < 0 ; G > 10;
+  H < 0 ; H > 10 ; I < 0 ; I > 10;
+  J < 0 ; J > 10),
+  writeln('Values must be higher than 0 and lesser than 11.'),
+  !.
+  
+queens10(A, B, C, D, E, F, G, H, I, J):-
+  L = [A, B, C, D, E, F, G, H, I, J],
+  queens(L, S),
+  printBoard(S, 1, 1).
