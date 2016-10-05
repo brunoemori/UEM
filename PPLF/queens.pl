@@ -7,8 +7,14 @@ listSize([], 0).
 queens(L, S):-
   listSize(L, X),
   X > 3,
+<<<<<<< HEAD
   permutation(L, S),
   safeQueen(S).
+=======
+  solve(L, S),
+  safeQueen(S),
+  nl, nl.
+>>>>>>> d273c456e1541c558c7d27e7a56ee65efc910b8e
 
 queens(L, _):-
   listSize(L, X),
@@ -41,29 +47,54 @@ noAttack(Q, [OtherQ | QList], Dist):-
   NextDist is Dist + 1,
   noAttack(Q, QList, NextDist).
 
-%board(A, B, C, D, E, F, G, H, I, J):-
-%  (A < 0; B < 0; C < 0; D < 0; E < 0;
-%  F < 0; G < 0; H < 0; I < 0; J < 0;
-%  A > 10; B > 10; C > 10; D > 10; E > 10;
-%  F > 10; G > 10; H > 10; I > 10; J > 10),
-%  writeln('Values cannot be less than 0 or higher than 10.'),
-%  !.
+printRest(10):-
+  !.
 
-printBoard([], _):-
-  nl.
+printRest(X):-
+  write('x '),
+  X1 is X + 1,
+  printRest(X1).
 
-printBoard([S | S1], X):-
-    S == X,
-    write(S),
-    write(' '),
-    X1 is X + 1,
-    printBoard(S1, X1).
+printBoard([], _, _).
 
-printBoard([S | S1], X):-
+printBoard(S, 11, Y):-
+  nl,
+  X = 1,
+  Y1 is Y + 1,
+  printBoard(S, X, Y1),
+  nl,
+  !.
+
+printBoard(L, X, Y):-
+  S | S1] = L,
+  S == X,
+  write('Q '),
+  printRest(X),
+  nl,
+  X1 is 1,
+  1 is Y + 1,
+  printBoard(S1, X1, Y1),
+  !.
+
+printBoard(L, X, Y):-
+  [S | _] = L,
   S =\= X,
   write('x '),
-  printBoard(S1, X).
+  X1 is X + 1,
+  printBoard(L, X1, Y),
+  !.
 
-%board(A, B, C, D, E, F, G, H, I, J):-
-%  QList = [A, B, C, D, E, F, G, H, I, J],
-%  queens(QList, S)
+queens10(A, B, C, D, E, F, G, H, I, J):-
+( A < 0 ; A > 10 ; B < 0 ; B > 10;
+  C < 0 ; C > 10 ; C < 0 ; C > 10;
+  D < 0 ; D > 10 ; E < 0 ; E > 10;
+  F < 0 ; F > 10 ; G < 0 ; G > 10;
+  H < 0 ; H > 10 ; I < 0 ; I > 10;
+  J < 0 ; J > 10),
+  writeln('Values must be higher than 0 and lesser than 11.'),
+  !.
+  
+queens10(A, B, C, D, E, F, G, H, I, J):-
+  L = [A, B, C, D, E, F, G, H, I, J],
+  queens(L, S),
+  printBoard(S, 1, 1).
