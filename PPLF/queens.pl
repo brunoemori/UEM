@@ -7,7 +7,7 @@ listSize([], 0).
 queens(L, S):-
   listSize(L, X),
   X > 3,
-  solve(L, S),
+  permutation(L, S),
   safeQueen(S).
 
 queens(L, _):-
@@ -16,10 +16,10 @@ queens(L, _):-
   writeln('Number of queens must be higher than 3.'),
   !.
 
-solve([], []). % Solution found (empty queen's row)
+permutation([], []).
 
-solve([Elem | Rest], SolList):-
-  solve(Rest, Rest1), % Take first queen q1 on the row and apply solve to the rest of it
+permutation([Elem | Rest], SolList):-
+  permutation(Rest, Rest1),
   remove(Elem, SolList, Rest1).
 
 remove(Elem, [Elem | List], List). %True if List = [Elem | List] (SolList - Elem = Rest1)
