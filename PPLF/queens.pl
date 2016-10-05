@@ -7,14 +7,12 @@ listSize([], 0).
 queens(L, S):-
   listSize(L, X),
   X > 3,
-<<<<<<< HEAD
   permutation(L, S),
   safeQueen(S).
-=======
-  solve(L, S),
+
+solve(L, S),
   safeQueen(S),
   nl, nl.
->>>>>>> d273c456e1541c558c7d27e7a56ee65efc910b8e
 
 queens(L, _):-
   listSize(L, X),
