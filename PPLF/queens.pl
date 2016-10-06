@@ -10,10 +10,6 @@ queens(L, S):-
   permutation(L, S),
   safeQueen(S).
 
-solve(L, S),
-  safeQueen(S),
-  nl, nl.
-
 queens(L, _):-
   listSize(L, X),
   X =< 3,
@@ -64,13 +60,13 @@ printBoard(S, 11, Y):-
   !.
 
 printBoard(L, X, Y):-
-  S | S1] = L,
+  [S | S1] = L,
   S == X,
   write('Q '),
   printRest(X),
   nl,
   X1 is 1,
-  1 is Y + 1,
+  Y1 is Y + 1,
   printBoard(S1, X1, Y1),
   !.
 
@@ -94,5 +90,16 @@ queens10(A, B, C, D, E, F, G, H, I, J):-
   
 queens10(A, B, C, D, E, F, G, H, I, J):-
   L = [A, B, C, D, E, F, G, H, I, J],
-  queens(L, S),
-  printBoard(S, 1, 1).
+  not(safeQueen(L)),
+  printBoard(L, 1, 1),
+  nl,
+  writeln('There is a conflict.'),
+  !.
+
+queens10(A, B, C, D, E, F, G, H, I, J):-
+  L = [A, B, C, D, E, F, G, H, I, J],
+  safeQueen(L),
+  printBoard(L, 1, 1),
+  nl,
+  writeln('No conflicts'),
+  !.
