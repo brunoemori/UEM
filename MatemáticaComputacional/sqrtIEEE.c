@@ -1,24 +1,41 @@
 #include <stdio.h>
 #include <math.h>
-#define TOTAL_SIZE 64
 #define EXP_SIZE 11
 #define MANTISSA_SIZE 54
 
 typedef union {
-  float num;
+  double num;
   struct { 
-    unsigned long int mantissa : 54;
+    unsigned long int mantissa : 52;
     unsigned int exponent : 11;
     unsigned int sign : 1;
   } parts;
 } floatIEEE754;
 
-void toBin(unsigned int in, int size, unsigned char *out) {
+void binaryExponent(unsigned int in, int size, unsigned char *out) {
   int i, aux, j = 0;
 
   for (i = size - 1; i >= 0; i--) {
-   aux = in >> i;
+    aux = in >> i;
     aux = aux & 1;
+
+    if (aux)
+      out[j] = '1';
+
+    else
+      out[j] = '0';
+
+    j++;
+  }
+}
+
+void binaryMantissa(unsigned long int in, int size, unsigned char *out) {
+  int i, aux, j = 0;
+
+  for (i = size - 1; i >= 0; i--) {
+    aux = in >> i;
+    aux = aux & 1;
+
     if (aux)
       out[j] = '1';
 
@@ -30,29 +47,36 @@ void toBin(unsigned int in, int size, unsigned char *out) {
 }
 
 int main() {
+  unsigned char sign, exponentArray[EXP_SIZE], mantissaArray[MANTISSA_SIZE];
   floatIEEE754 test;
-  test.num = 0.25;
-  
-  printf("sign = %x\n", test.parts.sign);
-  printf("exponent = %x\n", test.parts.exponent);
-  printf("mantisa = %x\n", test.parts.mantissa);
+  double inputNum;
 
-
-
-  /*unsigned char binaryArray[TOTAL_SIZE];
-  float inputNum, mantissa;
   int i, j = 0;
 
-  scanf("%f", &inputNum);
+  scanf("%lf", &inputNum);
+  test.num = inputNum; 
 
-  toBin(inputNum, 16, binaryArray);
+  binaryExponent(test.parts.exponent, EXP_SIZE, exponentArray);
+  binaryMantissa(test.parts.mantissa, MANTISSA_SIZE, mantissaArray);
 
-  if (inputNum < 0)
-    binaryArray[0] = '1';
+  printf("Sign: %i \n", test.parts.sign);
 
-  else
-    binaryArray[0] = '0';
+  printf("Exponent: ");
+  for (i = 0; i < EXP_SIZE; i++) 
+    printf("%c ", exponentArray[i]);
+  printf("\n");
 
+  printf("Mantissa: ");
+  for (i = 0; i < MANTISSA_SIZE; i++) 
+    printf("%c ", mantissaArray[i]);
+  printf("\n\n");
+
+  
+  printf("Sign = %i\n", test.parts.sign);
+  printf("Exponent = 0x%x\n", test.parts.exponent);
+  printf("Mantissa = 0x%x\n", test.parts.mantissa);
+
+/*
   int exponent;
   mantissa = frexpf(inputNum, &exponent);
   exponent += 1023;
