@@ -70,11 +70,12 @@ int main() {
   for (i = 0; i < MANTISSA_SIZE; i++) 
     printf("%c ", mantissaArray[i]);
   printf("\n\n");
-
   
   printf("Sign = %i\n", test.parts.sign);
   printf("Exponent = 0x%x\n", test.parts.exponent);
   printf("Mantissa = 0x%x\n", test.parts.mantissa);
+
+  printf("\n\n");
 
 /*
   int exponent;
