@@ -2,8 +2,30 @@
 
 (require htdp/matrix)
 (require readline)
+(require (planet neil/charterm:3:0))
 
 (define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable] [minesAround #:mutable]))
+
+(define-struct coordCell (x y))
+(define stackCells (list))
+
+(define (stackPush stack coord)
+  (append stack (list coord)))
+
+(define (stackPop stack)
+  (when (not (empty? stack))
+    (define aux (rest(reverse stack)))
+    (set! aux (reverse aux))
+    aux))
+
+(define (stackTop stack)
+  (when (not (empty? stack))
+    (define aux (reverse stack))
+    (define top (first aux))
+    top))
+
+(define (clearScreen)
+  (with-charterm (void (charterm-clear-screen))))
 
 (define (getSize)
   (display "Please input the board's size:\n")
@@ -12,8 +34,7 @@
   (cond
     [(or (not (number? boardSize)) (not (positive? boardSize))) (and ((display "Invalid entry.\n") (exit)))]
   )
-  boardSize
-)
+  boardSize)
 
 (define boardSize (getSize))
 
@@ -23,8 +44,7 @@
   (for ([i (* boardSize boardSize)])
     (set! auxList (append auxList (list cell)))
   )
-  auxList
-)
+  auxList)
 
 (define cellList (getMatrixCells))
 
@@ -37,10 +57,10 @@
   (cond
     [(or (not (number? nMines)) (not (positive? nMines))) (and ((display "Invalid entry.\n") (exit)))]
   )
-  nMines
-)
+  nMines)
 
 (define numMines (getNumMines))
+(define numflags numMines)
 
 (define (setMines board nMines)
   (define i 0)
@@ -56,10 +76,21 @@
         [else (set! board(setMines board nMines))])))
   board)
 
-(define (printGameBoard board)
+;Testing purposes
+(define (debugPrintGameBoard board)
   (for ([i boardSize]) (for ([j boardSize])
     (let ([cell (matrix-ref board i j)])
       (if (= (gameMatrix-hasMine cell) 1) (display "( x )") (display "( - )"))))
+    (display "\n")))
+
+(define (printGameBoard board)
+  (for ([i boardSize]) (for ([j boardSize])
+    (let ([cell (matrix-ref board i j)])
+      (cond
+        [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
+        [else 
+          (define minesInCell (gameMatrix-minesAround cell))
+          (display " ") (display minesInCell) (display "")])))
     (display "\n")))
 
 (define (checkCell board boardSize x y)
@@ -70,9 +101,50 @@
         (let ([aux (matrix-ref board i j)])
           (when (= (gameMatrix-hasMine aux ) 1) (set! n (add1 n))))]
       [else (void)])))
-  n
-)
+  n)
+
+(define toWin (* boardSize boardSize))
+
+(define (runStart)
+  (displayln "========== Minesweeper ==========")
+  (displayln "Use ! x y to walk")
+  (displayln "Use @ x y to flag")
+  (displayln "Press any key to continue.")
+  (define key (read-line (current-input-port)))
+  (clearScreen))
+
+(define (runGame)
+  (define move (void))
+  (printGameBoard gameBoard)
+  (displayln "Make your move: ")
+  (set! move (string-split (read-line (current-input-port))))
+  (void)
+  )
 
 (set! gameBoard (setMines gameBoard numMines))
-(printGameBoard gameBoard)
+(runStart)
+(runGame)
 (displayln "All OK.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
