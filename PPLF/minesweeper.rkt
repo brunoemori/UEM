@@ -3,7 +3,7 @@
 (require htdp/matrix)
 (require readline)
 
-(define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable]))
+(define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable] [minesAround #:mutable]))
 
 (define (getSize)
   (display "Please input the board's size:\n")
@@ -19,7 +19,7 @@
 
 (define (getMatrixCells)
   (define auxList (list))
-  (define cell (make-gameMatrix 0 0))
+  (define cell (make-gameMatrix 0 0 0))
   (for ([i (* boardSize boardSize)])
     (set! auxList (append auxList (list cell)))
   )
@@ -47,27 +47,32 @@
   (define j 0)
   (when (> nMines 0)
     (set! i (random boardSize))
-    (set! i (random boardSize))
+    (set! j (random boardSize))
     (let ([aux (matrix-ref board i j)])
       (cond 
         [(= (gameMatrix-hasMine aux) 0)
-        (matrix-set board i j (make-gameMatrix 1 0))
-        (setMines board (sub1 nMines))]
-
-        [else (setMines board nMines)]
-      )
-    )
-  )
-)
+        (set! board (matrix-set board i j (make-gameMatrix 1 0 0)))
+        (set! board (setMines board (sub1 nMines)))]
+        [else (set! board(setMines board nMines))])))
+  board)
 
 (define (printGameBoard board)
-  (for ([i boardSize])
-    (for ([j boardSize])
-      (display "( - )")
-    )
-    (display "\n")
-  )
+  (for ([i boardSize]) (for ([j boardSize])
+    (let ([cell (matrix-ref board i j)])
+      (if (= (gameMatrix-hasMine cell) 1) (display "( x )") (display "( - )"))))
+    (display "\n")))
+
+(define (checkCell board boardSize x y)
+  (define n 0)
+  (for ([i (in-range (- x 1) (+ x 1))]) (for ([j (in-range (- y 1) (+ y 1))])
+    (cond 
+      [(and (< i boardSize) (< j boardSize))
+        (let ([aux (matrix-ref board i j)])
+          (when (= (gameMatrix-hasMine aux ) 1) (set! n (add1 n))))]
+      [else (void)])))
+  n
 )
 
-(setMines gameBoard numMines)
+(set! gameBoard (setMines gameBoard numMines))
+(printGameBoard gameBoard)
 (displayln "All OK.")
