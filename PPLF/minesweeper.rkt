@@ -53,6 +53,7 @@
         (matrix-set board i j (make-gameMatrix 1 0))
         (setMines board (sub1 nMines))
       )
+      (setMines board nMines)
     )
   )
 )
