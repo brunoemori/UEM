@@ -1,9 +1,9 @@
 #lang racket
 
-(require math/matrix)
+(require htdp/matrix)
 (require readline)
 
-(struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable]))
+(define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable]))
 
 (define (getSize)
   (display "Please input the board's size:\n")
@@ -16,7 +16,19 @@
 )
 
 (define boardSize (getSize))
-(define gameBoard (make-matrix boardSize boardSize (gameMatrix 0 0)))
+
+(define (getMatrixCells)
+  (define auxList (list))
+  (define cell (make-gameMatrix 0 0))
+  (for ([i (* boardSize boardSize)])
+    (set! auxList (append auxList (list cell)))
+  )
+  auxList
+)
+
+(define cellList (getMatrixCells))
+
+(define gameBoard (make-matrix boardSize boardSize cellList))
 
 (define (getNumMines)
   (display "Please input the number of mines:\n")
@@ -31,11 +43,18 @@
 (define numMines (getNumMines))
 
 (define (setMines board nMines)
-  (define minesList (list))
-  (for ([i nMines])
-    (append minesList (list 1))     
+  (define i 0)
+  (define j 0)
+  (when (> nMines 0)
+    (set! i (random boardSize))
+    (set! i (random boardSize))
+    (let ([aux (matrix-ref board i j)])
+      (when (= (gameMatrix-hasMine aux) 0)
+        (matrix-set board i j (make-gameMatrix 1 0))
+        (setMines board (sub1 nMines))
+      )
+    )
   )
-   
 )
 
 (define (printGameBoard board)
@@ -47,4 +66,5 @@
   )
 )
 
-(printGameBoard gameBoard)
+(setMines gameBoard numMines)
+(displayln "All OK.")
