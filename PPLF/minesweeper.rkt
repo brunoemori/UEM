@@ -49,11 +49,13 @@
     (set! i (random boardSize))
     (set! i (random boardSize))
     (let ([aux (matrix-ref board i j)])
-      (when (= (gameMatrix-hasMine aux) 0)
+      (cond 
+        [(= (gameMatrix-hasMine aux) 0)
         (matrix-set board i j (make-gameMatrix 1 0))
-        (setMines board (sub1 nMines))
+        (setMines board (sub1 nMines))]
+
+        [else (setMines board nMines)]
       )
-      (setMines board nMines)
     )
   )
 )
