@@ -88,7 +88,10 @@
   (for ([i boardSize]) (for ([j boardSize])
     (let ([cell (matrix-ref board i j)])
       (cond
-        [((and (= (gameMatrix-isFlagged) 1) (= (gameMatrix-hasMine) 0)) (display "( W )") )]
+        [(= (gameMatrix-isFlagged cell) 1)
+          (if (= (gameMatrix-hasMine cell) 0)
+            (display "( W )")
+            (display "( F )"))]
         [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
         [(= (gameMatrix-hasMine cell) 1) (display "( x )")]
         [else 
@@ -137,8 +140,9 @@
     (define minesAround (checkCell board boardSize x y))
     (when (= (gameMatrix-isFlagged (matrix-ref board x y)) 1)
       (set! numFlags (add1 numFlags)))
-    (set! board (matrix-set board x y (make-gameMatrix 0 1 minesAround 0)))
-    (set! toWin (sub1 toWin))
+    (when (= (gameMatrix-statusVisit (matrix-ref board x y)) 0)
+      (set! toWin (sub1 toWin))
+      (set! board (matrix-set board x y (make-gameMatrix 0 1 minesAround 0))))
     (if (= minesAround 0)
       (for ([i (in-range (- x 1) (+ x 2))]) (for ([j (in-range (- y 1) (+ y 2))])
         (when (and (and (> i -1) (> j -1)) (and (< i boardSize) (< j boardSize)))
@@ -217,7 +221,7 @@
             ((set! toWin (sub1 toWin)) 
             (set! gameBoard (flag gameBoard (string->number (list-ref move 1)) (string->number (list-ref move 2))))
             (set! numFlags (sub1 numFlags))
-            (set! toWin (sub1 toWin))
+            (displayln toWin)
             (when (= toWin 0) 
               (printGameBoardEnd gameBoard)
               (displayln "You win !!")
