@@ -4,7 +4,7 @@
 (require readline)
 (require (planet neil/charterm:3:0))
 
-(define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable] [minesAround #:mutable] [isFlagged #:mutable #:auto]) #:auto-value 0)
+(define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable] [minesAround #:mutable] [isFlagged #:mutable]))
 
 (define-struct coordCell (x y))
 (define stackCells (list))
@@ -40,7 +40,7 @@
 
 (define (getMatrixCells)
   (define auxList (list))
-  (define cell (make-gameMatrix 0 0 0))
+  (define cell (make-gameMatrix 0 0 0 0))
   (for ([i (* boardSize boardSize)])
     (set! auxList (append auxList (list cell)))
   )
@@ -60,7 +60,7 @@
   nMines)
 
 (define numMines (getNumMines))
-(define numflags numMines)
+(define numFlags numMines)
 
 (define (setMines board nMines)
   (define i 0)
@@ -71,7 +71,7 @@
     (let ([aux (matrix-ref board i j)])
       (cond 
         [(= (gameMatrix-hasMine aux) 0)
-        (set! board (matrix-set board i j (make-gameMatrix 1 0 0)))
+        (set! board (matrix-set board i j (make-gameMatrix 1 0 0 0)))
         (set! board (setMines board (sub1 nMines)))]
         [else (set! board(setMines board nMines))])))
   board)
@@ -88,6 +88,7 @@
   (for ([i boardSize]) (for ([j boardSize])
     (let ([cell (matrix-ref board i j)])
       (cond
+        [((and (= (gameMatrix-isFlagged) 1) (= (gameMatrix-hasMine) 0)) (display "( W )") )]
         [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
         [(= (gameMatrix-hasMine cell) 1) (display "( x )")]
         [else 
@@ -99,6 +100,7 @@
   (for ([i boardSize]) (for ([j boardSize])
     (let ([cell (matrix-ref board i j)])
       (cond
+        [(= (gameMatrix-isFlagged cell) 1) (display "( F )")]
         [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
         [else 
           (define minesInCell (gameMatrix-minesAround cell))
@@ -133,7 +135,9 @@
     (set! stack (stackPop stack))
     (define cell (matrix-ref board x y))
     (define minesAround (checkCell board boardSize x y))
-    (set! board (matrix-set board x y (make-gameMatrix 0 1 minesAround)))
+    (when (= (gameMatrix-isFlagged (matrix-ref board x y)) 1)
+      (set! numFlags (add1 numFlags)))
+    (set! board (matrix-set board x y (make-gameMatrix 0 1 minesAround 0)))
     (set! toWin (sub1 toWin))
     (if (= minesAround 0)
       (for ([i (in-range (- x 1) (+ x 2))]) (for ([j (in-range (- y 1) (+ y 2))])
@@ -141,15 +145,14 @@
           (when (= (gameMatrix-statusVisit (matrix-ref board i j)) 0)
             (set! stack (stackPush stackCells (make-coordCell i j)))
             (set! board (recursiveVisit stack board boardSize))))))
-    (set! board (recursiveVisit stack board boardSize)))
-    )
+    (set! board (recursiveVisit stack board boardSize))))
   board
 )
 
 (define (walk board boardSize x y)
   (let ([cell (matrix-ref board x y)])
     (define minesAround (checkCell board boardSize x y))
-    (set! board (matrix-set board x y (make-gameMatrix (gameMatrix-hasMine cell) 1 minesAround)))
+    (set! board (matrix-set board x y (make-gameMatrix (gameMatrix-hasMine cell) 1 minesAround 0)))
     (set! toWin (sub1 toWin))
     (cond 
       [(= (gameMatrix-hasMine cell) 1)
@@ -164,29 +167,70 @@
   board
 )
 
+(define (flag board x y)
+  (define currentMine (gameMatrix-hasMine (matrix-ref board x y)))
+  (define currentVisit (gameMatrix-statusVisit (matrix-ref board x y)))
+  (define currentMinesAround (gameMatrix-minesAround (matrix-ref board x y)))
+  (set! board (matrix-set board x y (make-gameMatrix currentMine currentVisit currentMinesAround 1)))
+  board)
+
+(define (deflag board x y)
+  (define currentMine (gameMatrix-hasMine (matrix-ref board x y)))
+  (define currentVisit (gameMatrix-statusVisit (matrix-ref board x y)))
+  (define currentMinesAround (gameMatrix-minesAround (matrix-ref board x y)))
+  (set! board (matrix-set board x y (make-gameMatrix currentMine currentVisit currentMinesAround 0)))
+  board)
+
+
 (define (runGame)
   (define move (void))
   (printGameBoard gameBoard)
-  (displayln "Make your move: ")
+  (display "Make your move: ")
+  (display "(")
+  (display numFlags)
+  (displayln " flag (s) available.)")
   (set! move (string-split (read-line (current-input-port))))
   (clearScreen)
   (case (list-ref move 0)
     [("!") 
       (set! gameBoard (walk gameBoard boardSize (string->number (list-ref move 1)) (string->number (list-ref move 2))))
+      (displayln toWin)
       (when (= toWin 0) 
         (printGameBoardEnd gameBoard)
         (displayln "You win !!")
         (exit))
       (runGame)]
 
-    [("@") (display "Flag!")]
+    [("@")
+      (define auxX (string->number (list-ref move 1)))
+      (define auxY (string->number (list-ref move 2)))
 
-    [("exit") (exit)]
-  )
-)
+      (cond 
+        [(= (gameMatrix-isFlagged (matrix-ref gameBoard auxX auxY)) 1)
+          (set! gameBoard (deflag gameBoard auxX auxY))
+          (set! numFlags (add1 numFlags))
+          (set! toWin (add1 toWin))
+          (runGame)]
+
+        [(= (gameMatrix-statusVisit (matrix-ref gameBoard auxX auxY)) 0)
+          (if (> numFlags 0) 
+            ((set! toWin (sub1 toWin)) 
+            (set! gameBoard (flag gameBoard (string->number (list-ref move 1)) (string->number (list-ref move 2))))
+            (set! numFlags (sub1 numFlags))
+            (set! toWin (sub1 toWin))
+            (when (= toWin 0) 
+              (printGameBoardEnd gameBoard)
+              (displayln "You win !!")
+              (exit))
+            (runGame)) 
+          ;else
+            ((displayln "You don't have enough flags!\n")
+            (runGame)))]
+        
+        [else (runGame)])]
+
+    [("exit") (exit)]))
 
 (set! gameBoard (setMines gameBoard numMines))
 (runStart)
 (runGame)
-(displayln "All OK.")
-
