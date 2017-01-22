@@ -3,6 +3,7 @@
 (require htdp/matrix)
 (require readline)
 (require (planet neil/charterm:3:0))
+(require racket/date)
 
 (define-struct gameMatrix ([hasMine #:mutable] [statusVisit #:mutable] [minesAround #:mutable] [isFlagged #:mutable]))
 
@@ -36,7 +37,18 @@
   )
   boardSize)
 
+(define (getPlayerName)
+  (display "Please input your name:")
+  (define aux (read-line (current-input-port)))
+  aux)
+
+(define (getScore)
+  (define score (open-input-file "score.txt"))
+  score)
+
+(define playerName (getPlayerName))
 (define boardSize (getSize))
+(define score (getScore))
 
 (define (getMatrixCells)
   (define auxList (list))
@@ -92,8 +104,8 @@
           (if (= (gameMatrix-hasMine cell) 0)
             (display "( W )")
             (display "( F )"))]
-        [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
         [(= (gameMatrix-hasMine cell) 1) (display "( x )")]
+        [(= (gameMatrix-statusVisit cell) 0) (display "( - )")]
         [else 
           (define minesInCell (gameMatrix-minesAround cell))
           (display "( ") (display minesInCell) (display " )")])))
@@ -160,6 +172,7 @@
     (set! toWin (sub1 toWin))
     (cond 
       [(= (gameMatrix-hasMine cell) 1)
+        (clearScreen)
         (displayln "BOOM! You lose.")
         (printGameBoardEnd gameBoard)
         (exit)]
@@ -186,7 +199,7 @@
   board)
 
 
-(define (runGame)
+(define (runGame seconds minutes)
   (define move (void))
   (printGameBoard gameBoard)
   (display "Make your move: ")
@@ -198,12 +211,19 @@
   (case (list-ref move 0)
     [("!") 
       (set! gameBoard (walk gameBoard boardSize (string->number (list-ref move 1)) (string->number (list-ref move 2))))
-      (displayln toWin)
       (when (= toWin 0) 
         (printGameBoardEnd gameBoard)
         (displayln "You win !!")
+        (define endMinutes (- (date-minute (current-date)) minutes))
+        (define endSeconds (- (date-second (current-date)) seconds))
+        (when (negative? endMinutes) 
+          (set! endMinutes (+ endMinutes 60)))
+        (when (negative? endSeconds) 
+          (set! endSeconds (+ endSeconds 60)))
+          (fprintf (current-output-port) "Player: ~s\n" playerName)
+          (fprintf (current-output-port) "Time: ~s minute (s) and ~s second (s)\n" endMinutes endSeconds)
         (exit))
-      (runGame)]
+      (runGame seconds minutes)]
 
     [("@")
       (define auxX (string->number (list-ref move 1)))
@@ -214,27 +234,37 @@
           (set! gameBoard (deflag gameBoard auxX auxY))
           (set! numFlags (add1 numFlags))
           (set! toWin (add1 toWin))
-          (runGame)]
+          (runGame seconds minutes)]
 
         [(= (gameMatrix-statusVisit (matrix-ref gameBoard auxX auxY)) 0)
           (if (> numFlags 0) 
             ((set! toWin (sub1 toWin)) 
             (set! gameBoard (flag gameBoard (string->number (list-ref move 1)) (string->number (list-ref move 2))))
             (set! numFlags (sub1 numFlags))
-            (displayln toWin)
             (when (= toWin 0) 
               (printGameBoardEnd gameBoard)
               (displayln "You win !!")
+              (define endMinutes (- (date-minute (current-date)) minutes))
+              (define endSeconds (- (date-second (current-date)) seconds))
+              (when (negative? endMinutes) 
+                (set! endMinutes (+ endMinutes 60)))
+              (when (negative? endSeconds) 
+                (set! endSeconds (+ endSeconds 60)))
+              (fprintf (current-output-port) "Player: ~s\n" playerName)
+              (fprintf (current-output-port) "Time: ~v minute (s) and ~v second (s)\n" endMinutes endSeconds)
               (exit))
-            (runGame)) 
+            (runGame seconds minutes)) 
           ;else
             ((displayln "You don't have enough flags!\n")
-            (runGame)))]
+            (runGame seconds minutes)))]
         
-        [else (runGame)])]
+        [else (runGame seconds minutes)])]
 
     [("exit") (exit)]))
 
+(clearScreen)
 (set! gameBoard (setMines gameBoard numMines))
+(define startTimeMinutes (date-minute (current-date)))
+(define startTimeSeconds (date-second (current-date)))
 (runStart)
-(runGame)
+(runGame startTimeSeconds startTimeMinutes)
