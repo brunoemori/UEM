@@ -42,13 +42,8 @@
   (define aux (read-line (current-input-port)))
   aux)
 
-(define (getScore)
-  (define score (open-input-file "score.txt"))
-  score)
-
 (define playerName (getPlayerName))
 (define boardSize (getSize))
-(define score (getScore))
 
 (define (getMatrixCells)
   (define auxList (list))
