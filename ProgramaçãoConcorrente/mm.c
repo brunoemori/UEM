@@ -25,9 +25,14 @@ int **createMatrix(int height, int width) {
 		matrix[j] = (int *) malloc(width * sizeof(int));
 	}
 
+  int aux = 0;
+
 	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) 
-			matrix[i][j] = rand() % 1000;
+		for (j = 0; j < width; j++) {
+			//matrix[i][j] = rand() % 1000;
+      matrix[i][j] = aux;
+      aux++;
+    }
 	}
 
 	return matrix;
@@ -66,27 +71,34 @@ int **parMultiplyMatrix(int **matrix1, int **matrix2, int height1, int width1, i
 	int **resultMatrix = createMatrix(height1, width2);
 	int i, j;
 	
-  pthread_t thread[2];
-  int threadCount = 0;
+  pthread_t thread[numThreads];
+  int k;
 
-  matrixArgs *mArgs = malloc(sizeof(matrixArgs));
-  mArgs->matrix1 = matrix1;
-  mArgs->matrix2 = matrix2;
-  mArgs->size = width1;
+  matrixArgs *mArgs = malloc(sizeof(matrixArgs) * numThreads);
+  for (k = 0; k < numThreads; k++) {
+    mArgs[k].matrix1 = matrix1;
+    mArgs[k].matrix2 = matrix2;
+    mArgs[k].size = width1;
+  }
 
 	for (i = 0; i < height1; i++) {
-		for (j = 0; j < width2; j++) {
-      mArgs->i = i;
-      mArgs->j = j;
+		for (j = 0; j < width2; j+=numThreads) {
 
-      if (threadCount >= 2) 
-        threadCount = 0;
-    
-      pthread_create(&thread[threadCount], NULL, parMulti, mArgs);
-      pthread_join(thread[threadCount], NULL);
-      threadCount++;
-      resultMatrix[i][j] = mArgs->result;
-		}
+      for (k = 0; k < numThreads; k++) {
+        if ((j + k) >= width2) 
+          break;
+        mArgs[k].i = i;
+        mArgs[k].j = j + k;
+        pthread_create(&thread[k], NULL, parMulti, &mArgs[k]);
+      }
+
+      for (k = 0; k < numThreads; k++) {
+        if ((j + k) >= width2) 
+          break;
+        pthread_join(thread[k], NULL);
+        resultMatrix[i+k][j+k] = mArgs[k].result;
+      }
+    }
 	}
 	return resultMatrix;
 }
@@ -98,12 +110,20 @@ int main(int argc, char** argv) {
 	int matrixHeight2 = atoi(argv[3]);
 	int matrixWidth2 = atoi(argv[4]);
 	int nThreads = atoi(argv[5]);
-	
+
 	int	**matrix1, **matrix2, **resultMatrix;
 	matrix1 = createMatrix(matrixHeight1, matrixWidth1);
 	matrix2 = createMatrix(matrixHeight2, matrixWidth2);
 
-	//resultMatrix = multiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2);
+  /*
+  printMatrix(matrix1, matrixHeight1, matrixWidth1);
+  printf("\n");
+  printMatrix(matrix2, matrixHeight2, matrixWidth2);
+  printf("\n");
+  */
 
+	//resultMatrix = multiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2);
   resultMatrix = parMultiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2, 1);
+
+  //printMatrix(resultMatrix, matrixHeight1, matrixWidth2);
 }
