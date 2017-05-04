@@ -72,30 +72,40 @@ int **parMultiplyMatrix(int **matrix1, int **matrix2, int height1, int width1, i
 	
   pthread_t *thread = malloc(sizeof(pthread_t *) * numThreads);
 
-  matrixArgs *mArgs = malloc(sizeof(matrixArgs));
-  mArgs->matrix1 = matrix1;
-  mArgs->matrix2 = matrix2;
-  mArgs->size = width1;
+  matrixArgs *mArgs = malloc(sizeof(matrixArgs) * numThreads);
+  for (k = 0; k < numThreads; k++) {
+    mArgs[k].matrix1 = matrix1;
+    mArgs[k].matrix2 = matrix2;
+    mArgs[k].size = width1;
+  }
 
 	for (i = 0; i < height1; i++) {
-		mArgs->i = i;
 		for (j = 0; j < width2; j++) {
-			mArgs->j = j;
+      int aux = j;
 
 			for (k = 0; k < numThreads; k++) {
-				if (mArgs->j >= width2)
+				if (aux >= width2)
 					break;
-				pthread_create(&thread[k], NULL, parMulti, mArgs);
-				mArgs->j++;
+
+        //printf("%i %i\n", i, aux);
+
+				pthread_create(&thread[k], NULL, parMulti, &mArgs[k]);
+        aux++;
 			}
 
+      //printf("\n\n");
+
+      aux = j;
 			for (k = 0; k < numThreads; k++) {
-				if (mArgs->j >=width2)
+				if (aux >=width2)
 					break;
+        printf("%i\n", mArgs[k].result);
 				pthread_join(thread[k], NULL);
-				resultMatrix[i][j + k] = mArgs->result;
+				resultMatrix[i][mArgs[k].j] = mArgs[k].result;
+        aux++;
 			}
-			j+= numThreads;
+
+      j+= numThreads;
 		}
 	}
 
@@ -118,6 +128,6 @@ int main(int argc, char** argv) {
 	//resultMatrix = multiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2);
   resultMatrix = parMultiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2, nThreads);
 
-	printMatrix(resultMatrix, matrixWidth1, matrixHeight2);
+	//printMatrix(resultMatrix, matrixWidth1, matrixHeight2);
 }
 
