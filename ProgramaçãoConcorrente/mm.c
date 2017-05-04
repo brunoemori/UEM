@@ -96,7 +96,7 @@ int **parMultiplyMatrix(int **matrix1, int **matrix2, int height1, int width1, i
         if ((j + k) >= width2) 
           break;
         pthread_join(thread[k], NULL);
-        resultMatrix[i+k][j+k] = mArgs[k].result;
+        resultMatrix[i][j+k] = mArgs[k].result;
       }
     }
 	}
@@ -125,5 +125,5 @@ int main(int argc, char** argv) {
 	//resultMatrix = multiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2);
   resultMatrix = parMultiplyMatrix(matrix1, matrix2, matrixHeight1, matrixWidth1, matrixWidth2, 1);
 
-  //printMatrix(resultMatrix, matrixHeight1, matrixWidth2);
+  printMatrix(resultMatrix, matrixHeight1, matrixWidth2);
 }
