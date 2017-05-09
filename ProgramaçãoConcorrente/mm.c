@@ -40,12 +40,10 @@ int **createMatrix(int height, int width) {
 }
 
 void **initMatrix(int **matrix, int height, int width) {
-  int i, j, aux = 0;
+  int i, j;
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			//matrix[i][j] = rand() % 1000;
-			matrix[i][j] = aux;
-			aux++;
+			matrix[i][j] = rand() % 1000;
 		}	
 	}
 }
@@ -121,17 +119,17 @@ int **parMultiplyMatrix(int **matrix1, int **matrix2, int height1, int width1, i
   for (k = 0; k < numThreads; k++) {
     if (pthread_create(&thread[k], NULL, parMulti, &mArgs[k])) {
       printf("Error creating thread %i\n", k);
-	    free(thread);
+      free(thread);
       return NULL;
     }
   }
 
   for (k = 0; k < numThreads; k++) {
     pthread_join(thread[k], NULL);
-    printMatrix(mArgs[k].result, mArgs[k].matrixHeight1, mArgs[k].matrixWidth2);
+    //printMatrix(mArgs[k].result, mArgs[k].matrixHeight1, mArgs[k].matrixWidth2);
   }
 
-	free(thread);
+  free(thread);
   return NULL;
 }
 
