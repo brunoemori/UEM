@@ -2,79 +2,99 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-int **createMatrix(int height, int width) {
-	int **matrix = (int **) malloc(sizeof(int*) * height);
+float **createMatrix(int size) {
+	float **matrix = (float **) malloc(sizeof(float*) * size);
 	int i;
-	for (i = 0; i < height; i++) 
-		matrix[i] = (int *) malloc(sizeof(int) * height);
+	for (i = 0; i < size; i++) 
+		matrix[i] = (float *) malloc(sizeof(float) * size);
 
 	return matrix;
 }
 
-void initMatrix(int **matrix, int height, int width) {
-	int i, j, aux = 0;
-	for (i = 0; i < height; i++) 
-		for (j = 0; j < width; j++) { 
+void initMatrix(float **matrix, int size) {
+	int i, j;
+	float aux = 1;
+	for (i = 0; i < size; i++) 
+		for (j = 0; j < size; j++) { 
 			matrix[i][j] = aux;
 			aux++;
 		}
 }
 
-void initLowerTriangularMatrix(int **matrix, int height, int width) {
-	int i, j, aux = 1;
-	for (i = 0; i < height; i++) 
-		for (j = 0; j < width; j++) {
-			if (i < j)
-				matrix[i][j] = 0;
-			else {
-				matrix[i][j] = aux;
-				aux++;
-			}
-		}
-}
-
-void initUpperTriangularMatrix(int **matrix, int height, int width) {
-	int i, j, aux = 1;
-	for (i = 0; i < height; i++) 
-		for (j = 0; j < width; j++) {
-			if (i > j)
-				matrix[i][j] = 0;
-			else {
-				matrix[i][j] = aux;
-				aux++;
-			}
-		}
-}
-
-void printMatrix(int **matrix, int height, int width) {
+void getLowerTriangularMatrix(float **matrix, float **result, int size) {
 	int i, j;
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) 
-			printf("%i ", matrix[i][j]);
+	for (i = 0; i < size; i++) 
+		for (j = 0; j < size; j++) {
+			if (i < j)
+				result[i][j] = 0;
+			else {
+				if (i == j)
+					result[i][j] = 1;
+				else 
+					result[i][j] = matrix[i][j];
+			}
+		}
+}
+
+void getUpperTriangularMatrix(float **matrix, float **result, int size) {
+	int i, j, aux = 1;
+	for (i = 0; i < size; i++) 
+		for (j = 0; j < size; j++) {
+			if (i > j)
+				result[i][j] = 0;
+			else 
+				result[i][j] = matrix[i][j];
+		}
+}
+
+void printMatrix(float **matrix, int size) {
+	int i, j;
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) 
+			printf("%.2f ", matrix[i][j]);
 		printf("\n");
 	}
 }
 
-void sequential(int **matrix, int **result1, int **result2) {
+void sequential(float **matrix, int size) {
+	int i, j, k;
+	for (i = 1; i < size; i++) {
+		for (j = i; j < size; j++) {
+			for (k = 1; k < i - 1; k++) 
+				matrix[i][j] -= (matrix[i][k] * matrix[k][j]);
+		}
 	
+		for (j = i + 1; j < size; j++) {
+			for (k = 1; k < i - 1; k++) 
+				matrix[j][i] -= (matrix[j][k] * matrix[k][i]);
+			
+			matrix[j][i] /= matrix[i][i];
+		}
+	}
 }
 
 int main(int argv, char **argc) {
-	int height = atoi(argc[1]);
-	int width = height;
+	int size = atoi(argc[1]);
 	int numThreads;
 
-	int **matrix = createMatrix(height, width);
-	initMatrix(matrix, height, width);
-	//printMatrix(matrix, height, width);
+	float **matrix = createMatrix(size);
+	initMatrix(matrix, size);
+	printMatrix(matrix, size);
+	
+	sequential(matrix, size);
 
-	int **result1 = createMatrix(height, width);
-	initLowerTriangularMatrix(result1, height, width);
-	//printMatrix(result1, height, width);
+	//result 1 = L
+	float **result1 = createMatrix(size);
+	getLowerTriangularMatrix(matrix, result1, size);
 
-	int **result2 = createMatrix(height, width);
-	initUpperTriangularMatrix(result2, height, width);
-	printMatrix(result2, height, width);
+	//result2 = U
+	float **result2 = createMatrix(size);
+	getUpperTriangularMatrix(matrix, result2, size);
+
+	printf("\n\n");
+	printMatrix(result1, size);
+	printf("\n\n");
+	printMatrix(result2, size);
 
 	
 }
