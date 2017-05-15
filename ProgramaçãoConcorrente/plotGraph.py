@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 
-plt.plot([2, 4], [2, 4])
-plt.plot([2, 4], [1.99, 3.717])
+plt.plot([2, 4], [2, 4], "r")
+plt.plot([2, 4], [1.83, 3.53], "g--")
 plt.ylabel("Speedup")
-plt.xlabel("Threads")
-plt.axis([2, 4, 2, 4])
+plt.xlabel("Number of threads")
+#plt.axis([2, 4, 2, 4])
 plt.show()
