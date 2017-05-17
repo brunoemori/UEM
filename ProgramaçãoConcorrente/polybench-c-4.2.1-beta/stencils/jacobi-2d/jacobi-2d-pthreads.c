@@ -45,24 +45,6 @@ static void initMatrix(int n) {
     }
 }
 
-/* Main computational kernel. The whole function will be timed,
-   including the call and return. */
-static void kernel_jacobi_2d(int tsteps, int n) {
-  int t, i, j;
-
-#pragma scop
-  for (t = 0; t < _PB_TSTEPS; t++) {
-    for (i = 1; i < _PB_N - 1; i++)
-	    for (j = 1; j < _PB_N - 1; j++)
-	      B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][1+j] + A[1+i][j] + A[i-1][j]);
-
-    for (i = 1; i < _PB_N - 1; i++)
-	    for (j = 1; j < _PB_N - 1; j++)
-	      A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][1+j] + B[1+i][j] + B[i-1][j]);
-    }
-#pragma endscop
-}
-
 //Parallel -------------------------------------------------
 pthread_mutex_t barrierMutex;
 pthread_cond_t releaseCondition;
@@ -84,8 +66,31 @@ void threadBarrier() {
   pthread_mutex_unlock(&barrierMutex);
 }
 
+void dbgArgsValues(fArgs *args) {
+  int i;
+  for (i = 0; i < numThreads; i++) 
+    printf("Arg %i:  start: %i, end: %i\n", i, args[i].start, args[i].end);
+}
+
+/* Main computational kernel. The whole function will be timed,
+   including the call and return. */
 void kernel_jacobi_2d_parallel(void *args) {
-    
+  int t, i, j;
+  fArgs *thisArgs = args;
+
+  for (t = 0; t < TSTEPS; t++) {
+    for (i = thisArgs->start; i <= thisArgs->end; i++) 
+      for (j = 0; j < N; j++)
+        B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][j+1] + A[i+1][j] + A[i-1][j]);
+ 
+    threadBarrier();
+
+    for (i = thisArgs->start; i <= thisArgs->end; i++)
+      for (j = 0; j < N; j++)
+        A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][j+1] + B[i+1][j] + B[i-1][j]);
+
+    threadBarrier();
+  }
 }
 
 int main(int argc, char** argv)
@@ -93,59 +98,62 @@ int main(int argc, char** argv)
   /* Retrieve problem size. */
   int n = N;
   int tsteps = TSTEPS;
-  //int numThreads = atoi(argv[1]);
-  int i;
+  numThreads = atoi(argv[1]);
 
+  //Initializing matrices
   initMatrix(n);
 
   //Defining threads & arguments
-  /*
   pthread_t *threads = malloc(sizeof(pthread_t *) * numThreads);
   fArgs *jacobiArgs = malloc(sizeof(fArgs *) * numThreads);
 
   int linesPerThread = (n - 2) / numThreads;
-  int rest = n % numThreads;
+  int rest = (n - 2) % numThreads;
 
-  for (i = 0; i < numThreads; i++) {
-    jacobiArgs[i].start = 1;
-    jacobiArgs[i].end = linesPerThread;
-  }
-
-  for (i = 0; i < numThreads; i++) {
-    jacobiArgs[i].start++;
+  jacobiArgs[0].start = 1;
+  jacobiArgs[0].end = linesPerThread;
+  if (rest != 0) {
+    jacobiArgs[0].end++;
     rest--;
-
-    if (rest == 0)
-      break;
   }
 
+  int i;
   for (i = 1; i < numThreads; i++) {
     jacobiArgs[i].start = jacobiArgs[i - 1].end + 1;
     jacobiArgs[i].end = jacobiArgs[i].start + linesPerThread - 1;
+    if (rest != 0) {
+      jacobiArgs[i].end++;
+      rest--;
+    }
   }
-  */
 
+  //Debugging the arguments
+  dbgArgsValues(jacobiArgs); 
+ 
   /* Start timer. */
   polybench_start_instruments;
 
   /* Run kernel. */
-  kernel_jacobi_2d(tsteps, n);
-  /*
-  for (i = 0; i < numThreads; i++) {
-    pthread_create(&threads[i], NULL, kernel_jacobi_2d_parallel, &args); 
-  }
-  */
+  for (i = 0; i < numThreads; i++) 
+    if(pthread_create(&threads[i], NULL, kernel_jacobi_2d_parallel, &jacobiArgs[i])) {
+      printf("Error creating threads.\n");
+      POLYBENCH_FREE_ARRAY(A);
+      POLYBENCH_FREE_ARRAY(B);
+      free(jacobiArgs);
+      return -1;
+    }
+
+  for (i = 0; i < numThreads; i++) 
+    pthread_join(threads[i], NULL);
 
   /* Stop and print timer. */
   polybench_stop_instruments;
   polybench_print_instruments;
 
-  /* Prevent dead-code elimination. All live-out data must be printed
-     by the function call in argument. */
-
   /* Be clean. */
   POLYBENCH_FREE_ARRAY(A);
   POLYBENCH_FREE_ARRAY(B);
+  free(jacobiArgs);
 
   return 0;
 }
