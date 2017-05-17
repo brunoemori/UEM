@@ -19,7 +19,7 @@
 #include <polybench.h>
 
 /* Include benchmark-specific header. */
-#include "jacobi-2d.h"
+#include "jacobi-2d-openmp.h"
 
 
 /* Array initialization. */
@@ -55,12 +55,10 @@ void print_array(int n,
       if ((i * n + j) % 20 == 0) fprintf(POLYBENCH_DUMP_TARGET, "\n");
       fprintf(POLYBENCH_DUMP_TARGET, DATA_PRINTF_MODIFIER, A[i][j]);
     }
-    printf("\n");
   }
   POLYBENCH_DUMP_END("A");
   POLYBENCH_DUMP_FINISH;
 }
-
 
 /* Main computational kernel. The whole function will be timed,
    including the call and return. */
@@ -73,34 +71,31 @@ void kernel_jacobi_2d(int tsteps,
   int t, i, j;
 
 #pragma scop
-  #pragma omp parallel private(t, i, j) 
-  {
-    #pragma omp master 
-    {
-      for (t = 0; t < _PB_TSTEPS; t++) {
+	for (t = 0; t < _PB_TSTEPS; t++) {
+	
+		#pragma omp parallel for num_threads(4)
+		for (i = 1; i < _PB_N - 1; i++)
+			for (j = 1; j < _PB_N - 1; j++)
+    		B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][1+j] + A[1+i][j] + A[i-1][j]);
 
-        #pragma omp parallel for 
-        for (i = 1; i < _PB_N - 1; i++)
-          for (j = 1; j < _PB_N - 1; j++)
-            B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][1+j] + A[1+i][j] + A[i-1][j]);
-
-        #pragma omp parallel for
-        for (i = 1; i < _PB_N - 1; i++)
-          for (j = 1; j < _PB_N - 1; j++)
-            A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][1+j] + B[1+i][j] + B[i-1][j]);
-      }
-    }
-  }
+		#pragma omp parallel for num_threads(4)
+		for (i = 1; i < _PB_N - 1; i++)
+		  for (j = 1; j < _PB_N - 1; j++)
+   			A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][1+j] + B[1+i][j] + B[i-1][j]);
+	}	
 #pragma endscop
-
 }
 
+int main(int argc, char** argv) {
+	if (argc < 2) {
+		printf("Invalid arguments.\n");
+		return 0;
+	}
 
-int main(int argc, char** argv)
-{
   /* Retrieve problem size. */
   int n = N;
   int tsteps = TSTEPS;
+	//numThread = atoi(argv[1]);
 
   /* Variable declaration/allocation. */
   POLYBENCH_2D_ARRAY_DECL(A, DATA_TYPE, N, N, n, n);

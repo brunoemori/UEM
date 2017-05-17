@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <pthread.h>
 
 /* Include polybench common header. */
 #include <polybench.h>
@@ -45,6 +46,23 @@ static void initMatrix(int n) {
     }
 }
 
+static void printMatrices(int n) {
+	int i, j;
+	printf("Matrix A:\n");
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++)
+			printf("%.2lf ", A[i][j]);
+		printf("\n");
+	}
+
+	printf("Matrix B:\n");
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++)
+			printf("%.2lf ", B[i][j]);
+		printf("\n");
+	}
+}
+
 //Parallel -------------------------------------------------
 pthread_mutex_t barrierMutex;
 pthread_cond_t releaseCondition;
@@ -74,27 +92,31 @@ void dbgArgsValues(fArgs *args) {
 
 /* Main computational kernel. The whole function will be timed,
    including the call and return. */
-void kernel_jacobi_2d_parallel(void *args) {
+void *kernel_jacobi_2d_parallel(void *args) {
   int t, i, j;
   fArgs *thisArgs = args;
 
   for (t = 0; t < TSTEPS; t++) {
     for (i = thisArgs->start; i <= thisArgs->end; i++) 
-      for (j = 0; j < N; j++)
+      for (j = 1; j < N - 1; j++)
         B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][j+1] + A[i+1][j] + A[i-1][j]);
  
     threadBarrier();
 
     for (i = thisArgs->start; i <= thisArgs->end; i++)
-      for (j = 0; j < N; j++)
+      for (j = 1; j < N - 1; j++)
         A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][j+1] + B[i+1][j] + B[i-1][j]);
 
     threadBarrier();
   }
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv)	{
+	if (argc < 2) {
+		printf("Invalid argument.\n");
+		return 0;
+	}
+
   /* Retrieve problem size. */
   int n = N;
   int tsteps = TSTEPS;
@@ -128,7 +150,7 @@ int main(int argc, char** argv)
   }
 
   //Debugging the arguments
-  //dbgArgsValues(jacobiArgs); 
+  //dbgArgsValues(jacobiArgs);
  
   /* Start timer. */
   polybench_start_instruments;
