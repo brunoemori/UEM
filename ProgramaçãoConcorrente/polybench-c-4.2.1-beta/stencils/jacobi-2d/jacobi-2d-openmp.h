@@ -7,41 +7,45 @@
  *
  * Web address: http://polybench.sourceforge.net
  */
-#ifndef _ADI_H
-# define _ADI_H
+#ifndef _JACOBI_2D_H
+# define _JACOBI_2D_H
 
 /* Default to LARGE_DATASET. */
 # if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)
-#  define LARGE_DATASET
+#  define CUSTOM_DATASET
 # endif
 
 # if !defined(TSTEPS) && !defined(N)
 /* Define sample dataset sizes. */
 #  ifdef MINI_DATASET
 #   define TSTEPS 20
-#   define N 20
+#   define N 30
 #  endif
 
 #  ifdef SMALL_DATASET
 #   define TSTEPS 40
-#   define N 60
+#   define N 90
 #  endif
 
 #  ifdef MEDIUM_DATASET
 #   define TSTEPS 100
-#   define N 200
+#   define N 250
 #  endif
 
 #  ifdef LARGE_DATASET
 #   define TSTEPS 500
-#   define N 1000
+#   define N 1300
 #  endif
 
 #  ifdef EXTRALARGE_DATASET
 #   define TSTEPS 1000
-#   define N 2000
+#   define N 2800
 #  endif
 
+# ifdef CUSTOM_DATASET
+#   define TSTEPS 2000
+#   define N 8000
+# endif
 
 #endif /* !(TSTEPS N) */
 
@@ -77,4 +81,4 @@
 #  define POW_FUN(x,y) pow(x,y)
 # endif
 
-#endif /* !_ADI_H */
+#endif /* !_JACOBI_2D_H */

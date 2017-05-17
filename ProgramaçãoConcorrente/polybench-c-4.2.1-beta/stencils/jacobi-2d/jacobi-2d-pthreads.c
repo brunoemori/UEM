@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   }
 
   //Debugging the arguments
-  dbgArgsValues(jacobiArgs); 
+  //dbgArgsValues(jacobiArgs); 
  
   /* Start timer. */
   polybench_start_instruments;
