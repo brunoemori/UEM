@@ -43,8 +43,8 @@
 #  endif
 
 # ifdef CUSTOM_DATASET
-#   define TSTEPS 2000
-#   define N 8000
+#   define TSTEPS 500
+#   define N 2000
 # endif
 
 
