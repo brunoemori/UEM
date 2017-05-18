@@ -64,31 +64,9 @@ static void printMatrices(int n) {
 }
 
 //Parallel -------------------------------------------------
-pthread_mutex_t barrierMutex;
-pthread_cond_t releaseCondition;
+pthread_barrier_t barrierMutex;
 int threadsArrived = 0;
 int numThreads; //Passed as command line (args)
-
-void threadBarrier() {
-  pthread_mutex_lock(&barrierMutex);
-  threadsArrived++;
-
-  if (threadsArrived == numThreads) {
-    threadsArrived = 0;
-    pthread_cond_broadcast(&releaseCondition);
-  }
-
-  else
-    pthread_cond_wait(&releaseCondition, &barrierMutex);
-
-  pthread_mutex_unlock(&barrierMutex);
-}
-
-void dbgArgsValues(fArgs *args) {
-  int i;
-  for (i = 0; i < numThreads; i++) 
-    printf("Arg %i:  start: %i, end: %i\n", i, args[i].start, args[i].end);
-}
 
 /* Main computational kernel. The whole function will be timed,
    including the call and return. */
@@ -97,17 +75,19 @@ void *kernel_jacobi_2d_parallel(void *args) {
   fArgs *thisArgs = args;
 
   for (t = 0; t < TSTEPS; t++) {
+    printf("%i\n", t);
+    fflush(stdout);
     for (i = thisArgs->start; i <= thisArgs->end; i++) 
       for (j = 1; j < N - 1; j++)
         B[i][j] = SCALAR_VAL(0.2) * (A[i][j] + A[i][j-1] + A[i][j+1] + A[i+1][j] + A[i-1][j]);
  
-    threadBarrier();
+    pthread_barrier_wait(&barrierMutex);
 
     for (i = thisArgs->start; i <= thisArgs->end; i++)
       for (j = 1; j < N - 1; j++)
         A[i][j] = SCALAR_VAL(0.2) * (B[i][j] + B[i][j-1] + B[i][j+1] + B[i+1][j] + B[i-1][j]);
 
-    threadBarrier();
+    pthread_barrier_wait(&barrierMutex);
   }
 }
 
@@ -121,6 +101,13 @@ int main(int argc, char** argv)	{
   int n = N;
   int tsteps = TSTEPS;
   numThreads = atoi(argv[1]);
+
+  //Initializing barrier
+  pthread_barrier_init(&barrierMutex, NULL, numThreads);
+
+  pthread_attr_t attrib;
+  pthread_attr_init(&attrib);
+  pthread_attr_setscope(&attrib, PTHREAD_SCOPE_SYSTEM);
 
   //Initializing matrices
   initMatrix(n);
@@ -176,6 +163,7 @@ int main(int argc, char** argv)	{
   POLYBENCH_FREE_ARRAY(A);
   POLYBENCH_FREE_ARRAY(B);
   free(jacobiArgs);
+  pthread_barrier_destroy(&barrierMutex);
 
   return 0;
 }

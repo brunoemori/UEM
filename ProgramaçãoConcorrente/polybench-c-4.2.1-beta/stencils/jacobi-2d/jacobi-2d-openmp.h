@@ -7,8 +7,8 @@
  *
  * Web address: http://polybench.sourceforge.net
  */
-#ifndef _JACOBI_2D_H
-# define _JACOBI_2D_H
+#ifndef _JACOBI_2D_H_OPENMP
+# define _JACOBI_2D_H_OPENMP
 
 /* Default to LARGE_DATASET. */
 # if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)

@@ -72,6 +72,8 @@ void kernel_jacobi_2d(int tsteps,
 
 #pragma scop
 	for (t = 0; t < _PB_TSTEPS; t++) {
+    printf("%i\n", t);
+    fflush(stdout);
 	
 		#pragma omp parallel for num_threads(4)
 		for (i = 1; i < _PB_N - 1; i++)
